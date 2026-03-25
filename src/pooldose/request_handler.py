@@ -115,7 +115,7 @@ class RequestHandler:  # pylint: disable=too-many-instance-attributes
             bool: True if reachable, False otherwise.
         """
         try:
-            reader, writer = await asyncio.wait_for(
+            _, writer = await asyncio.wait_for(
                 asyncio.open_connection(self.host, self.port),
                 timeout=self.timeout,
             )
