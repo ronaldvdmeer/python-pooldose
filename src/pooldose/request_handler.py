@@ -32,7 +32,17 @@ class RequestHandler:  # pylint: disable=too-many-instance-attributes
     Only softwareVersion, and apiversion are loaded from params.js.
     """
 
-    def __init__(self, host: str, timeout: int = 10, *, websession: Optional[aiohttp.ClientSession] = None, use_ssl: bool = False, port: Optional[int] = None, ssl_verify: bool = True, debug_payload: bool = False):  # pylint: disable=too-many-arguments
+    def __init__(  # pylint: disable=too-many-arguments
+        self,
+        host: str,
+        timeout: int = 10,
+        *,
+        websession: Optional[aiohttp.ClientSession] = None,
+        use_ssl: bool = False,
+        port: Optional[int] = None,
+        ssl_verify: bool = True,
+        debug_payload: bool = False,
+    ):
         self.host = host
         self.timeout = timeout
         self.use_ssl = use_ssl
