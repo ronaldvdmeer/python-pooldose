@@ -220,3 +220,99 @@ class TestInstantValues:  # pylint: disable=too-many-public-methods
 
         value = instant_values_fixture._get_value("unknown")
         assert value is None
+
+    # --- minT/maxT number processing tests ---
+
+    def test_number_minT_field(self, instant_values_fixture):
+        """Test that minT field splits abs_max range correctly (abs_max / 2)."""
+        result = instant_values_fixture["ofa_ph_lower"]
+        value, unit, min_val, max_val, step = result
+        assert value == 6.5
+        assert min_val == 0.0
+        # abs_max (14.0) should be halved for minT
+        assert max_val == 7.0
+        assert step == 0.1
+
+    def test_number_maxT_field(self, instant_values_fixture):
+        """Test that maxT field splits abs_min range correctly (abs_max / 2 + resolution)."""
+        result = instant_values_fixture["ofa_ph_upper"]
+        value, unit, min_val, max_val, step = result
+        assert value == 7.8
+        # abs_min should be abs_max / 2 + resolution for maxT
+        assert min_val == 7.1
+        assert max_val == 14.0
+        assert step == 0.1
+
+    def test_number_minT_structured_dict(self, instant_values_fixture):
+        """Test that minT/maxT numbers appear correctly in structured dict."""
+        structured = instant_values_fixture.to_structured_dict()
+        assert "ofa_ph_lower" in structured["number"]
+        assert structured["number"]["ofa_ph_lower"]["value"] == 6.5
+        assert structured["number"]["ofa_ph_lower"]["max"] == 7.0
+        assert "ofa_ph_upper" in structured["number"]
+        assert structured["number"]["ofa_ph_upper"]["value"] == 7.8
+        assert structured["number"]["ofa_ph_upper"]["min"] == 7.1
+
+    # --- _get_corresponding_value tests ---
+
+    def test_get_corresponding_value_from_mapping(self, instant_values_fixture):
+        """Test _get_corresponding_value finds the paired minT/maxT entry via mapping."""
+        # pylint: disable=protected-access
+        attrs = instant_values_fixture._mapping["ofa_ph_lower"]
+        # ofa_ph_lower has field=minT, so corresponding should find ofa_ph_upper (maxT)
+        result = instant_values_fixture._get_corresponding_value("ofa_ph_lower", "minT", attrs)
+        assert result == 7.8  # maxT value from the device data
+
+    def test_get_corresponding_value_reverse(self, instant_values_fixture):
+        """Test _get_corresponding_value finds minT from maxT."""
+        # pylint: disable=protected-access
+        attrs = instant_values_fixture._mapping["ofa_ph_upper"]
+        # ofa_ph_upper has field=maxT, so corresponding should find ofa_ph_lower (minT)
+        result = instant_values_fixture._get_corresponding_value("ofa_ph_upper", "maxT", attrs)
+        assert result == 6.5  # minT value from the device data
+
+    def test_get_corresponding_value_fallback_raw(self, instant_values_fixture):
+        """Test _get_corresponding_value falls back to raw device entry when no mapping pair exists."""
+        # pylint: disable=protected-access
+        # Remove the paired mapping entry to force fallback
+        saved = instant_values_fixture._mapping.pop("ofa_ph_upper")
+        attrs = instant_values_fixture._mapping["ofa_ph_lower"]
+        result = instant_values_fixture._get_corresponding_value("ofa_ph_lower", "minT", attrs)
+        # Fallback should find maxT directly in raw entry
+        assert result == 7.8
+        # Restore mapping
+        instant_values_fixture._mapping["ofa_ph_upper"] = saved
+
+    def test_get_corresponding_value_fallback_abs(self, instant_values_fixture):
+        """Test _get_corresponding_value falls back to absMin/absMax when no field found."""
+        # pylint: disable=protected-access
+        # Remove paired mapping and remove the direct field from device data
+        saved_mapping = instant_values_fixture._mapping.pop("ofa_ph_upper")
+        raw_key = "PDPR1H1HAW100_FW539187_w_ofa_ph"
+        saved_maxT = instant_values_fixture._device_data[raw_key].pop("maxT")
+        attrs = instant_values_fixture._mapping["ofa_ph_lower"]
+        result = instant_values_fixture._get_corresponding_value("ofa_ph_lower", "minT", attrs)
+        # Should fall back to absMax
+        assert result == 14.0
+        # Restore
+        instant_values_fixture._device_data[raw_key]["maxT"] = saved_maxT
+        instant_values_fixture._mapping["ofa_ph_upper"] = saved_mapping
+
+    def test_get_corresponding_value_no_data(self, instant_values_fixture):
+        """Test _get_corresponding_value returns None when no data available."""
+        # pylint: disable=protected-access
+        result = instant_values_fixture._get_corresponding_value("nonexistent", "minT", {"key": "w_nonexistent"})
+        assert result is None
+
+    # --- binary_sensor with conversion tests ---
+
+    def test_binary_sensor_with_conversion_false(self, instant_values_fixture):
+        """Test binary sensor with conversion mapping returning False."""
+        value = instant_values_fixture["binary_conv_sensor"]
+        assert value is False
+
+    def test_binary_sensor_with_conversion_in_structured(self, instant_values_fixture):
+        """Test binary sensor with conversion appears in structured dict."""
+        structured = instant_values_fixture.to_structured_dict()
+        assert "binary_conv_sensor" in structured["binary_sensor"]
+        assert structured["binary_sensor"]["binary_conv_sensor"]["value"] is False
