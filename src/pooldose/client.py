@@ -24,7 +24,7 @@ _LOGGER = logging.getLogger(__name__)
 
 API_VERSION_SUPPORTED = "v1/"
 
-_RETRY_DELAY = 0.5
+_RETRY_DELAY = 0.1
 
 class PooldoseClient:
     """
@@ -44,6 +44,7 @@ class PooldoseClient:
         port: Optional[int] = None,
         ssl_verify: bool = True,
         debug_payload: bool = False,
+        retry_delay: float = _RETRY_DELAY,
     ) -> None:
         """
         Initialize the Pooldose client.
@@ -59,6 +60,8 @@ class PooldoseClient:
             port (Optional[int]): Custom port for connections. Defaults to 80 for HTTP, 443 for HTTPS.
             ssl_verify (bool): If True, verify SSL certificates. Only used when use_ssl=True.
             debug_payload (bool): If True, log and store payloads sent to device for debugging.
+            retry_delay (float): Delay in seconds between consecutive API requests during connect.
+                Prevents overwhelming the embedded device. Defaults to 0.1s.
         """
         self._host = host
         self._timeout = timeout
@@ -68,6 +71,7 @@ class PooldoseClient:
         self._port = port
         self._ssl_verify = ssl_verify
         self._debug_payload = debug_payload
+        self._retry_delay = retry_delay
         self._last_data = None
         self._websession = websession
         self._request_handler: RequestHandler | None = None
@@ -178,7 +182,7 @@ class PooldoseClient:
                 self.device_info["MODEL_ID"] = device.get("PRODUCT_CODE")
                 self.device_info["FW_VERSION"] = device.get("FW_REL")
                 self.device_info["FW_CODE"] = device.get("FW_CODE")
-        await asyncio.sleep(_RETRY_DELAY)
+        await asyncio.sleep(self._retry_delay)
 
         # Load mapping information
         model_id = self.device_info.get("MODEL_ID")
@@ -200,7 +204,7 @@ class PooldoseClient:
             # Only include WiFi key if explicitly requested
             if self._include_sensitive_data:
                 self.device_info["WIFI_KEY"] = wifi_station.get("KEY")
-        await asyncio.sleep(_RETRY_DELAY)
+        await asyncio.sleep(self._retry_delay)
 
         # Access point info
         status, access_point = await self._request_handler.get_access_point()
@@ -211,7 +215,7 @@ class PooldoseClient:
             # Only include AP key if explicitly requested
             if self._include_sensitive_data:
                 self.device_info["AP_KEY"] = access_point.get("KEY")
-        await asyncio.sleep(_RETRY_DELAY)
+        await asyncio.sleep(self._retry_delay)
 
         # Network info
         status, network_info = await self._request_handler.get_network_info()
