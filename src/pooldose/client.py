@@ -30,7 +30,19 @@ class PooldoseClient:
     All getter methods return (status, data) and log errors.
     """
 
-    def __init__(self, host: str, timeout: int = 30, *, websession: Optional[aiohttp.ClientSession] = None, include_sensitive_data: bool = False, include_mac_lookup: bool = False, use_ssl: bool = False, port: Optional[int] = None, ssl_verify: bool = True, debug_payload: bool = False) -> None:  # pylint: disable=too-many-arguments
+    def __init__(  # pylint: disable=too-many-arguments
+        self,
+        host: str,
+        timeout: int = 30,
+        *,
+        websession: Optional[aiohttp.ClientSession] = None,
+        include_sensitive_data: bool = False,
+        include_mac_lookup: bool = False,
+        use_ssl: bool = False,
+        port: Optional[int] = None,
+        ssl_verify: bool = True,
+        debug_payload: bool = False,
+    ) -> None:
         """
         Initialize the Pooldose client.
 
