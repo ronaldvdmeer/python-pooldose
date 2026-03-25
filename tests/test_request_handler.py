@@ -1,6 +1,7 @@
 """Tests for RequestHandler for Async API client for SEKO Pooldose."""
 
 from unittest.mock import AsyncMock, MagicMock, patch
+import asyncio
 import aiohttp
 import pytest
 
@@ -441,4 +442,137 @@ class TestAccessPointParsing:
             status, data = await handler.get_access_point()
 
             assert status == RequestStatus.NO_DATA
+            assert data is None
+
+    @pytest.mark.asyncio
+    async def test_get_access_point_json_with_prefix(self):
+        """Test that get_access_point() extracts JSON from response with extra text."""
+        handler = RequestHandler("192.168.1.1")
+
+        mock_session = MagicMock()
+        mock_session.close = AsyncMock()
+
+        # Response has valid JSON embedded in extra text
+        mock_response = MagicMock()
+        mock_response.status = 200
+        mock_response.raise_for_status = MagicMock()
+        mock_response.text = AsyncMock(return_value='some prefix {"SSID": "Test", "KEY": "secret"} suffix')
+
+        with patch.object(handler, '_get_session', return_value=(mock_session, True)):
+            async_cm = AsyncMock()
+            async_cm.__aenter__.return_value = mock_response
+            mock_session.post = MagicMock(return_value=async_cm)
+
+            status, data = await handler.get_access_point()
+
+            assert status == RequestStatus.SUCCESS
+            assert data == {"SSID": "Test", "KEY": "secret"}
+            mock_session.close.assert_awaited_once()
+
+
+class TestWifiStationParsing:
+    """Tests for the get_wifi_station() error handling and JSON fallback parsing."""
+
+    @pytest.mark.asyncio
+    async def test_get_wifi_station_success(self):
+        """Test that get_wifi_station() returns data on successful response."""
+        handler = RequestHandler("192.168.1.1")
+
+        mock_session = MagicMock()
+        mock_session.close = AsyncMock()
+
+        mock_response = MagicMock()
+        mock_response.status = 200
+        mock_response.raise_for_status = MagicMock()
+        mock_response.json = AsyncMock(return_value={"SSID": "TestWiFi", "IP": "192.168.1.100"})
+
+        with patch.object(handler, '_get_session', return_value=(mock_session, True)):
+            async_cm = AsyncMock()
+            async_cm.__aenter__.return_value = mock_response
+            mock_session.post = MagicMock(return_value=async_cm)
+
+            status, data = await handler.get_wifi_station()
+
+            assert status == RequestStatus.SUCCESS
+            assert data == {"SSID": "TestWiFi", "IP": "192.168.1.100"}
+            mock_session.close.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    async def test_get_wifi_station_empty_response(self):
+        """Test that get_wifi_station() returns NO_DATA when response is empty."""
+        handler = RequestHandler("192.168.1.1")
+
+        mock_session = MagicMock()
+        mock_session.close = AsyncMock()
+
+        mock_response = MagicMock()
+        mock_response.status = 200
+        mock_response.raise_for_status = MagicMock()
+        mock_response.json = AsyncMock(return_value={})
+
+        with patch.object(handler, '_get_session', return_value=(mock_session, True)):
+            async_cm = AsyncMock()
+            async_cm.__aenter__.return_value = mock_response
+            mock_session.post = MagicMock(return_value=async_cm)
+
+            status, data = await handler.get_wifi_station()
+
+            assert status == RequestStatus.NO_DATA
+            assert data is None
+
+    @pytest.mark.asyncio
+    async def test_get_wifi_station_network_error_no_json(self):
+        """Test that get_wifi_station() handles network errors without embedded JSON."""
+        handler = RequestHandler("192.168.1.1")
+
+        mock_session = MagicMock()
+        mock_session.close = AsyncMock()
+
+        with patch.object(handler, '_get_session', return_value=(mock_session, True)):
+            async_cm = AsyncMock()
+            async_cm.__aenter__.side_effect = aiohttp.ClientError("Connection refused")
+            mock_session.post = MagicMock(return_value=async_cm)
+
+            status, data = await handler.get_wifi_station()
+
+            assert status == RequestStatus.UNKNOWN_ERROR
+            assert data is None
+
+    @pytest.mark.asyncio
+    async def test_get_wifi_station_network_error_with_valid_json(self):
+        """Test that get_wifi_station() extracts JSON from error message when available."""
+        handler = RequestHandler("192.168.1.1")
+
+        mock_session = MagicMock()
+        mock_session.close = AsyncMock()
+
+        # Simulate an error whose string representation contains valid JSON
+        error_msg = 'Error: {"SSID": "TestWiFi", "IP": "192.168.1.100"}'
+
+        with patch.object(handler, '_get_session', return_value=(mock_session, True)):
+            async_cm = AsyncMock()
+            async_cm.__aenter__.side_effect = aiohttp.ClientError(error_msg)
+            mock_session.post = MagicMock(return_value=async_cm)
+
+            status, data = await handler.get_wifi_station()
+
+            assert status == RequestStatus.SUCCESS
+            assert data == {"SSID": "TestWiFi", "IP": "192.168.1.100"}
+
+    @pytest.mark.asyncio
+    async def test_get_wifi_station_timeout_error(self):
+        """Test that get_wifi_station() handles asyncio.TimeoutError."""
+        handler = RequestHandler("192.168.1.1")
+
+        mock_session = MagicMock()
+        mock_session.close = AsyncMock()
+
+        with patch.object(handler, '_get_session', return_value=(mock_session, True)):
+            async_cm = AsyncMock()
+            async_cm.__aenter__.side_effect = asyncio.TimeoutError()
+            mock_session.post = MagicMock(return_value=async_cm)
+
+            status, data = await handler.get_wifi_station()
+
+            assert status == RequestStatus.UNKNOWN_ERROR
             assert data is None

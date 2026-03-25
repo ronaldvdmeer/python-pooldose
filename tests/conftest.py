@@ -81,6 +81,18 @@ def mock_device_data():
         "PDPR1H1HAW100_FW539187_w_1label789": {
             "current": "|PDPR1H1HAW100_FW539187_LABEL_w_1eklg44ro_ALCALYNE|",
             "magnitude": ["undefined"]
+        },
+        "PDPR1H1HAW100_FW539187_w_ofa_ph": {
+            "current": 6.5,
+            "minT": 6.5,
+            "maxT": 7.8,
+            "absMin": 0.0,
+            "absMax": 14.0,
+            "resolution": 0.1,
+            "magnitude": ["ph"]
+        },
+        "PDPR1H1HAW100_FW539187_w_binary_conv": {
+            "current": "|PDPR1H1HAW100_FW539187_LABEL_w_binary_conv_DISABLE|"
         }
     }
 
@@ -135,6 +147,24 @@ def mock_mapping():
         "alarm_ph": {
             "type": "binary_sensor",
             "key": "w_1switch123"
+        },
+        "ofa_ph_lower": {
+            "type": "number",
+            "key": "w_ofa_ph",
+            "field": "minT"
+        },
+        "ofa_ph_upper": {
+            "type": "number",
+            "key": "w_ofa_ph",
+            "field": "maxT"
+        },
+        "binary_conv_sensor": {
+            "type": "binary_sensor",
+            "key": "w_binary_conv",
+            "conversion": {
+                "|PDPR1H1HAW100_FW539187_LABEL_w_binary_conv_DISABLE|": False,
+                "|PDPR1H1HAW100_FW539187_LABEL_w_binary_conv_ENABLE|": True
+            }
         }
     }
 
