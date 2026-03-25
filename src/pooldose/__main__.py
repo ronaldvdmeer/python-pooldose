@@ -75,7 +75,7 @@ async def run_device_analyzer(host: str, use_ssl: bool, port: int, show_all: boo
     try:
         # Test connection
         print("Testing connection...")
-        if not handler.check_host_reachable():
+        if not await handler.check_host_reachable():
             print("Host not reachable!")
             return
         print("Host is reachable")
