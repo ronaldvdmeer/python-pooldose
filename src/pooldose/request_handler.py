@@ -4,7 +4,6 @@ import asyncio
 import json
 import logging
 import re
-import socket
 import ssl
 from typing import Any, Optional, Tuple, Union, List, Dict
 
@@ -95,7 +94,7 @@ class RequestHandler:  # pylint: disable=too-many-instance-attributes
         Returns:
             RequestStatus: SUCCESS if connected successfully, otherwise appropriate error status.
         """
-        if not self.check_host_reachable():
+        if not await self.check_host_reachable():
             return RequestStatus.HOST_UNREACHABLE
 
         params = await self._get_core_params()
@@ -118,7 +117,7 @@ class RequestHandler:  # pylint: disable=too-many-instance-attributes
         """Get the last payload sent to the device (if debug_payload is enabled)."""
         return self._last_payload
 
-    def check_host_reachable(self) -> bool:
+    async def check_host_reachable(self) -> bool:
         """
         Check if the host is reachable on the configured port.
 
@@ -126,9 +125,14 @@ class RequestHandler:  # pylint: disable=too-many-instance-attributes
             bool: True if reachable, False otherwise.
         """
         try:
-            with socket.create_connection((self.host, self.port), timeout=self.timeout):
-                return True
-        except (socket.error, socket.timeout) as err:
+            _, writer = await asyncio.wait_for(
+                asyncio.open_connection(self.host, self.port),
+                timeout=self.timeout,
+            )
+            writer.close()
+            await writer.wait_closed()
+            return True
+        except (OSError, asyncio.TimeoutError) as err:
             _LOGGER.error("Host %s not reachable on port %d: %s", self.host, self.port, err)
             return False
 

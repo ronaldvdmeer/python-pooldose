@@ -83,27 +83,31 @@ class TestRequestHandlerSSL:
         url = handler._build_url("/api/v1/test")
         assert url == "https://example.com/api/v1/test"
 
-    @patch('socket.create_connection')
-    def test_host_reachable_custom_port(self, mock_socket):
+    @pytest.mark.asyncio
+    @patch('asyncio.open_connection')
+    async def test_host_reachable_custom_port(self, mock_open):
         """Test host reachability check uses configured port."""
-        mock_socket.return_value.__enter__ = Mock()
-        mock_socket.return_value.__exit__ = Mock()
+        mock_writer = Mock()
+        mock_writer.close = Mock()
+        mock_writer.wait_closed = AsyncMock()
+        mock_open.return_value = (AsyncMock(), mock_writer)
 
         handler = RequestHandler("example.com", port=8080)
-        result = handler.check_host_reachable()
+        result = await handler.check_host_reachable()
 
-        mock_socket.assert_called_once_with(("example.com", 8080), timeout=10)
+        mock_open.assert_called_once_with("example.com", 8080)
         assert result is True
 
-    @patch('socket.create_connection')
-    def test_host_unreachable_custom_port(self, mock_socket):
+    @pytest.mark.asyncio
+    @patch('asyncio.open_connection')
+    async def test_host_unreachable_custom_port(self, mock_open):
         """Test host unreachable with custom port."""
-        mock_socket.side_effect = OSError("Connection failed")
+        mock_open.side_effect = OSError("Connection failed")
 
         handler = RequestHandler("example.com", port=8443, use_ssl=True)
-        result = handler.check_host_reachable()
+        result = await handler.check_host_reachable()
 
-        mock_socket.assert_called_once_with(("example.com", 8443), timeout=10)
+        mock_open.assert_called_once_with("example.com", 8443)
         assert result is False
 
     def test_ssl_context_configuration(self):
