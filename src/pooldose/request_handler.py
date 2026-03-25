@@ -185,6 +185,9 @@ class RequestHandler:  # pylint: disable=too-many-instance-attributes
         except (aiohttp.ClientError, asyncio.TimeoutError) as err:
             _LOGGER.warning("Error fetching core params: %s", err)
             return None
+        except Exception as err:  # pylint: disable=broad-exception-caught
+            _LOGGER.warning("Unexpected error fetching core params: %s", err)
+            return None
 
     async def get_debug_config(self) -> Tuple[RequestStatus, Optional[DebugConfigDict]]:
         """
