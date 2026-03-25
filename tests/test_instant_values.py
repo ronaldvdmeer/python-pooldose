@@ -223,27 +223,27 @@ class TestInstantValues:  # pylint: disable=too-many-public-methods
 
     # --- minT/maxT number processing tests ---
 
-    def test_number_minT_field(self, instant_values_fixture):
+    def test_number_min_t_field(self, instant_values_fixture):
         """Test that minT field splits abs_max range correctly (abs_max / 2)."""
         result = instant_values_fixture["ofa_ph_lower"]
-        value, unit, min_val, max_val, step = result
+        value, _, min_val, max_val, step = result
         assert value == 6.5
         assert min_val == 0.0
         # abs_max (14.0) should be halved for minT
         assert max_val == 7.0
         assert step == 0.1
 
-    def test_number_maxT_field(self, instant_values_fixture):
+    def test_number_max_t_field(self, instant_values_fixture):
         """Test that maxT field splits abs_min range correctly (abs_max / 2 + resolution)."""
         result = instant_values_fixture["ofa_ph_upper"]
-        value, unit, min_val, max_val, step = result
+        value, _, min_val, max_val, step = result
         assert value == 7.8
         # abs_min should be abs_max / 2 + resolution for maxT
         assert min_val == 7.1
         assert max_val == 14.0
         assert step == 0.1
 
-    def test_number_minT_structured_dict(self, instant_values_fixture):
+    def test_number_min_t_structured_dict(self, instant_values_fixture):
         """Test that minT/maxT numbers appear correctly in structured dict."""
         structured = instant_values_fixture.to_structured_dict()
         assert "ofa_ph_lower" in structured["number"]
@@ -289,13 +289,13 @@ class TestInstantValues:  # pylint: disable=too-many-public-methods
         # Remove paired mapping and remove the direct field from device data
         saved_mapping = instant_values_fixture._mapping.pop("ofa_ph_upper")
         raw_key = "PDPR1H1HAW100_FW539187_w_ofa_ph"
-        saved_maxT = instant_values_fixture._device_data[raw_key].pop("maxT")
+        saved_max_t = instant_values_fixture._device_data[raw_key].pop("maxT")
         attrs = instant_values_fixture._mapping["ofa_ph_lower"]
         result = instant_values_fixture._get_corresponding_value("ofa_ph_lower", "minT", attrs)
         # Should fall back to absMax
         assert result == 14.0
         # Restore
-        instant_values_fixture._device_data[raw_key]["maxT"] = saved_maxT
+        instant_values_fixture._device_data[raw_key]["maxT"] = saved_max_t
         instant_values_fixture._mapping["ofa_ph_upper"] = saved_mapping
 
     def test_get_corresponding_value_no_data(self, instant_values_fixture):
