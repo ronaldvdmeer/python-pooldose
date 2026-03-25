@@ -24,6 +24,8 @@ _LOGGER = logging.getLogger(__name__)
 
 API_VERSION_SUPPORTED = "v1/"
 
+_RETRY_DELAY = 0.5
+
 class PooldoseClient:
     """
     Async client for SEKO Pooldose API.
@@ -176,7 +178,7 @@ class PooldoseClient:
                 self.device_info["MODEL_ID"] = device.get("PRODUCT_CODE")
                 self.device_info["FW_VERSION"] = device.get("FW_REL")
                 self.device_info["FW_CODE"] = device.get("FW_CODE")
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(_RETRY_DELAY)
 
         # Load mapping information
         model_id = self.device_info.get("MODEL_ID")
@@ -198,7 +200,7 @@ class PooldoseClient:
             # Only include WiFi key if explicitly requested
             if self._include_sensitive_data:
                 self.device_info["WIFI_KEY"] = wifi_station.get("KEY")
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(_RETRY_DELAY)
 
         # Access point info
         status, access_point = await self._request_handler.get_access_point()
@@ -209,7 +211,7 @@ class PooldoseClient:
             # Only include AP key if explicitly requested
             if self._include_sensitive_data:
                 self.device_info["AP_KEY"] = access_point.get("KEY")
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(_RETRY_DELAY)
 
         # Network info
         status, network_info = await self._request_handler.get_network_info()
