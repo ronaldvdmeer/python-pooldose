@@ -276,14 +276,18 @@ class RequestHandler:  # pylint: disable=too-many-instance-attributes
             json_start = text.find("{")
             json_end = text.rfind("}") + 1
             if json_start != -1 and json_end != -1:
-                data = json.loads(text[json_start:json_end])
+                try:
+                    data = json.loads(text[json_start:json_end])
+                except json.JSONDecodeError:
+                    _LOGGER.error("Failed to parse JSON from WiFi station error response: %s", err)
+                    return RequestStatus.UNKNOWN_ERROR, None
             else:
                 _LOGGER.error("Failed to fetch WiFi station info: %s", err)
                 return RequestStatus.UNKNOWN_ERROR, None
-        if not data:
-            _LOGGER.error("No data found for WiFi station info")
-            return RequestStatus.NO_DATA, None
-        return RequestStatus.SUCCESS, data
+            if not data:
+                _LOGGER.error("No data found for WiFi station info")
+                return RequestStatus.NO_DATA, None
+            return RequestStatus.SUCCESS, data
 
     async def get_access_point(self) -> Tuple[RequestStatus, Optional[AccessPointDict]]:
         """
@@ -311,7 +315,11 @@ class RequestHandler:  # pylint: disable=too-many-instance-attributes
                     json_end = text.rfind("}") + 1
                     data = None
                     if json_start != -1 and json_end != -1:
-                        data = json.loads(text[json_start:json_end])
+                        try:
+                            data = json.loads(text[json_start:json_end])
+                        except json.JSONDecodeError:
+                            _LOGGER.error("Failed to parse JSON from access point response")
+                            return RequestStatus.UNKNOWN_ERROR, None
                     if not data:
                         _LOGGER.error("No data found for access point info")
                         return RequestStatus.NO_DATA, None
