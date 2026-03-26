@@ -164,11 +164,14 @@ class RequestHandler:  # pylint: disable=too-many-instance-attributes
         result = {}
         try:
             timeout_obj = aiohttp.ClientTimeout(total=self.timeout)
-            connector = self._get_ssl_connector()
-            async with aiohttp.ClientSession(connector=connector) as session:
+            session, close_session = await self._get_session()
+            try:
                 async with session.get(url, headers=self._headers, timeout=timeout_obj) as resp:
                     resp.raise_for_status()
                     js_text = await resp.text()
+            finally:
+                if close_session:
+                    await session.close()
 
             for key in keys:
                 match = re.search(rf'{key}\s*:\s*["\']([^"\']+)["\']', js_text)
