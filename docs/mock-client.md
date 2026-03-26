@@ -18,8 +18,12 @@ async def simple_test():
     # Load data file
     json_file = Path("path/to/your/data.json")
     
-    # Create mock client
-    client = MockPooldoseClient(json_file_path=json_file)
+    # Create mock client (model_id and fw_code are required)
+    client = MockPooldoseClient(
+        json_file_path=json_file,
+        model_id="PDPR1H1HAW100",
+        fw_code="539187"
+    )
     
     # Connect (loads mapping data)
     status = await client.connect()
@@ -56,7 +60,7 @@ You can use the mock client with custom JSON files via the command line:
 pooldose --mock path/to/your/data.json
 
 
-# Use mock client with model and firmware code (Beispiel mit Fantasiewerten)
+# Use mock client with model and firmware code (example with fictional values)
 pooldose --mock path/to/your/data.json --model-id PDZZ1H1HATEST1V1 --fw-code 654321
 
 # Or as Python module
@@ -92,6 +96,8 @@ The JSON file must have the following structure:
 ```python
 client = MockPooldoseClient(
     json_file_path="path/to/data.json",
+    model_id="PDPR1H1HAW100",
+    fw_code="539187",
     timeout=30,  # Ignored (compatibility)
     include_sensitive_data=True  # Include WiFi keys etc.
 )
@@ -140,7 +146,7 @@ The following sample JSON files are available in the repository:
 
 ```python
 def test_temperature_reading():
-    client = MockPooldoseClient("sample_data.json")
+    client = MockPooldoseClient("sample_data.json", model_id="PDPR1H1HAW100", fw_code="539187")
     asyncio.run(client.connect())
     
     status, values = asyncio.run(client.instant_values())
@@ -152,7 +158,7 @@ def test_temperature_reading():
 
 ```python
 # Analyze all sensor values
-client = MockPooldoseClient("production_data.json")
+client = MockPooldoseClient("production_data.json", model_id="PDPR1H1HAW100", fw_code="539187")
 await client.connect()
 
 status, data = await client.instant_values_structured()
@@ -168,7 +174,7 @@ for sensor_name, sensor_data in sensors.items():
 
 ```python
 async def test_full_integration():
-    client = MockPooldoseClient("integration_sample_data.json")
+    client = MockPooldoseClient("integration_sample_data.json", model_id="PDPR1H1HAW100", fw_code="539187")
     
     # Test connection
     assert await client.connect() == RequestStatus.SUCCESS

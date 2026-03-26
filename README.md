@@ -102,7 +102,7 @@ See [docs/cli.md](docs/cli.md) for full CLI documentation and device analysis de
 | SEKO POOLDOSE pH+ORP CF Group Wi-Fi | PDPR1H1HAW102 | 539187 | Alias for PDPR1H1HAW100 mapping |
 | SEKO PoolDose pH | PDPH1H1HAW100 | 539176 | pH-only device |
 | VÁGNER POOL VA DOS BASIC | PDHC1H1HAR1V0 | 539224 | |
-| VÁGNER POOL VA DOS EXACT | PDHC1H1HAR1V1 | 539224 | Alias for PDHC1H1HAR1V0 mapping |
+| VÁGNER POOL VA DOS EXACT | PDHC1H1HAR1V1 | 539224 | Alias for PDPR1H1HAR1V0 mapping |
 
 Other models may work but are untested. See [docs/device-support.md](docs/device-support.md) for how to request support for new devices.
 
@@ -121,9 +121,3 @@ Other models may work but are untested. See [docs/device-support.md](docs/device
 ## Changelog
 
 For detailed release notes and version history, please see [CHANGELOG.md](CHANGELOG.md).
-
-### Latest Release (0.8.6)
-
-- Added support for **SEKO POOLDOSE Double SPA** (`PDPR1H04AW100`) device
-- Changed sensors with Disable/Enable values to binary sensors (mapping values to binary states)
-- Thanks to [@ronaldvdmeer](https://github.com/ronaldvdmeer) for contributing again

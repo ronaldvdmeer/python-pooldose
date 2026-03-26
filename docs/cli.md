@@ -1,6 +1,9 @@
 # Command Line Usage
 
-After installation, you can use python-pooldose directly from the command line:
+After installation, you can use python-pooldose directly from the command line.
+
+> **Note:** `--host` and `--mock` are mutually exclusive — you must specify exactly one.
+> `--analyze` and `--analyze-all` require `--host` (they cannot be used in mock mode).
 
 ## Connect to Real Device
 
@@ -19,6 +22,9 @@ pooldose --host 192.168.1.100 --analyze
 
 # Show all widgets including hidden ones
 pooldose --host 192.168.1.100 --analyze-all
+
+# Show version
+pooldose --version
 ```
 
 ## Mock Mode with JSON Files
@@ -44,6 +50,9 @@ python -m pooldose --mock data.json
 
 # Show help
 python -m pooldose --help
+
+# Show version
+python -m pooldose --version
 ```
 
 ## Device Analysis for Unsupported Devices
