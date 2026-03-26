@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] - 2026-03-26
+
+### Added
+
+- **Shields.io Badges**: Added PyPI version, Python version, license, Pylint, Mypy, and Tests badges to README ([#38](https://github.com/lmaertin/python-pooldose/pull/38))
+
+### Changed
+
+- **README Restructure**: Split ~980-line README into compact overview + `docs/` folder ([#38](https://github.com/lmaertin/python-pooldose/pull/38))
+  - README reduced to ~100 lines with quick start, CLI summary, and documentation index
+  - Detailed docs moved to `docs/api-reference.md`, `docs/cli.md`, `docs/examples.md`, `docs/mock-client.md`, `docs/ssl.md`, `docs/security.md`, `docs/type-hints.md`
+- **Retry Delay**: Extracted retry delay as a `PooldoseClient` constructor parameter (`retry_delay`, default: 0.1s) ([#34](https://github.com/lmaertin/python-pooldose/pull/34))
+
+### Fixed
+
+- **Session Consistency**: `_get_core_params()` now uses shared `_get_session()` instead of creating a standalone session, ensuring correct session hand-over from Home Assistant ([#35](https://github.com/lmaertin/python-pooldose/pull/35))
+- **Exception Handling**: Added broad exception fallback in `_get_core_params()` to catch unexpected errors like `UnicodeDecodeError` ([#36](https://github.com/lmaertin/python-pooldose/pull/36))
+- **Async Host Check**: `check_host_reachable()` is now properly async ([#31](https://github.com/lmaertin/python-pooldose/pull/31))
+- **JSON Parse Errors**: Fixed `JSONDecodeError` handling in `RequestHandler` methods ([#29](https://github.com/lmaertin/python-pooldose/pull/29))
+
+### Enhanced
+
+- **Test Coverage**: Added 16 new tests (160 total), all passing ([#30](https://github.com/lmaertin/python-pooldose/pull/30))
+- **Code Quality**: PEP 8 multi-line `__init__` signatures, pylint score 10.00/10, mypy clean ([#32](https://github.com/lmaertin/python-pooldose/pull/32), [#33](https://github.com/lmaertin/python-pooldose/pull/33))
+- **Documentation Accuracy**: Fixed MockPooldoseClient examples, API Reference, CLI docs, and device support table ([#38](https://github.com/lmaertin/python-pooldose/pull/38))
+
+### Contributors
+
+Thanks to [@ronaldvdmeer](https://github.com/ronaldvdmeer) for contributing to this release.
+
 ## [0.8.6] - 2026-03-15
 
 ### Added
