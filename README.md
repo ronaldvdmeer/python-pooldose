@@ -1,5 +1,12 @@
 # python-pooldose
 
+[![PyPI version](https://img.shields.io/pypi/v/python-pooldose)](https://pypi.org/project/python-pooldose/)
+[![Python](https://img.shields.io/badge/python-%3E%3D3.11-blue)](https://pypi.org/project/python-pooldose/)
+[![License: MIT](https://img.shields.io/github/license/lmaertin/python-pooldose)](LICENSE)
+[![Pylint](https://github.com/lmaertin/python-pooldose/actions/workflows/pylint.yml/badge.svg)](https://github.com/lmaertin/python-pooldose/actions/workflows/pylint.yml)
+[![Mypy](https://github.com/lmaertin/python-pooldose/actions/workflows/mypy.yml/badge.svg)](https://github.com/lmaertin/python-pooldose/actions/workflows/mypy.yml)
+[![Tests](https://github.com/lmaertin/python-pooldose/actions/workflows/python-app.yml/badge.svg)](https://github.com/lmaertin/python-pooldose/actions/workflows/python-app.yml)
+
 Unofficial async Python client for [SEKO](https://www.seko.com/) Pooldosing systems. SEKO is a manufacturer of various monitoring and control devices for pools and spas. Some devices from [VÁGNER POOL](https://www.vagnerpool.com/web/en/) are compatible as well.
 
 This client uses an undocumented local HTTP API. It provides live readings for pool sensors such as temperature, pH, ORP/Redox, as well as status information and control over the dosing logic.
